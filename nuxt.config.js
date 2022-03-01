@@ -44,6 +44,6 @@ export default {
   build: {
   },
   env: {
-    API_URL: 'http://localhost:3030/'
+    API_URL: 'https://anime-scraper-backend.herokuapp.com/'
   }
 }

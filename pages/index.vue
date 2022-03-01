@@ -19,9 +19,9 @@
       </div>
       <div v-else-if="search_status == 2">
         <div class="card">
-          <h1>Episode {{ anime_data[index].episode_number }}</h1>
+          <h1>Episode {{ index + 1 }}</h1>
           <iframe
-            :src="anime_data[index].video_link"
+            :src="video_link"
             id="video"
             width="950"
             height="362"
@@ -54,6 +54,7 @@ export default {
   data() {
     return {
       index: 0,
+      video_link: '',
       url: "",
       selected: 0,
       options: [],
@@ -62,6 +63,16 @@ export default {
     };
   },
   methods: {
+    async load(link) {
+      const axios = require("axios");
+      const episode = await axios.post(`${process.env.API_URL}get_episode`,{
+        url: link,
+      })
+      console.log(episode);
+      this.video_link = episode.data.video_link
+      let audio_iframe = document.getElementById('video');
+      audio_iframe.volume=0.2;
+    },
     async search() {
       const axios = require("axios");
       this.search_status = 1;
@@ -69,18 +80,18 @@ export default {
         const response = await axios.post(`${process.env.API_URL}get_data`, {
           url: this.url,
         });
+        console.log(response);
         this.anime_data = response.data;
         const data = response.data.map((element, index) => {
           return {
             value: index,
-            text: `Episode ${element.episode_number}`
+            text: `Episode ${index+1}`
           }
         })
         const pro_data = await Promise.all(data)
         this.options = pro_data
         this.search_status = 2;
-        let audio_iframe = document.getElementById('video');
-        audio_iframe.volume=0.2;
+        this.load(this.anime_data[0].link)
       } catch (error) {
         console.log(error);
       }
@@ -89,6 +100,7 @@ export default {
       if (this.index > 0) {
         this.index = this.index - 1;
         this.selected = this.index
+        this.load(this.anime_data[this.index].link)
       } else {
         alert("This is the first episode.");
       }
@@ -97,6 +109,7 @@ export default {
       if (this.index < this.anime_data.length - 1) {
         this.index = this.index + 1;
         this.selected = this.index
+        this.load(this.anime_data[this.index].link)
       } else {
         alert("This is the last episode.");
       }
