@@ -22,15 +22,18 @@
           <h1>Episode {{ anime_data[index].episode_number }}</h1>
           <iframe
             :src="anime_data[index].video_link"
-            width="760"
-            height="400"
+            id="video"
+            width="950"
+            height="362"
+            allowfullscreen
             class="player"
           ></iframe>
         </div><br>
-        <div style="text_align: center">
+        <div class="button-group">
           <b-button variant="success" @click.prevent="prev()"
             >Previous Episode</b-button
           >
+          <b-form-select style="width: max-content;" v-model="selected" :options="options"></b-form-select>
           <b-button variant="success" @click.prevent="next()"
             >Next Episode</b-button
           >
@@ -43,10 +46,17 @@
 <script>
 export default {
   name: "IndexPage",
+  watch: {
+    selected(value) {
+      this.index = value
+    },
+  },
   data() {
     return {
       index: 0,
       url: "",
+      selected: 0,
+      options: [],
       anime_data: [],
       search_status: 0,
     };
@@ -56,11 +66,21 @@ export default {
       const axios = require("axios");
       this.search_status = 1;
       try {
-        const response = await axios.post(`${process.env.API_URL}/get_data`, {
+        const response = await axios.post(`${process.env.API_URL}get_data`, {
           url: this.url,
         });
         this.anime_data = response.data;
+        const data = response.data.map((element, index) => {
+          return {
+            value: index,
+            text: `Episode ${element.episode_number}`
+          }
+        })
+        const pro_data = await Promise.all(data)
+        this.options = pro_data
         this.search_status = 2;
+        let audio_iframe = document.getElementById('video');
+        audio_iframe.volume=0.2;
       } catch (error) {
         console.log(error);
       }
@@ -68,6 +88,7 @@ export default {
     prev() {
       if (this.index > 0) {
         this.index = this.index - 1;
+        this.selected = this.index
       } else {
         alert("This is the first episode.");
       }
@@ -75,6 +96,7 @@ export default {
     next() {
       if (this.index < this.anime_data.length - 1) {
         this.index = this.index + 1;
+        this.selected = this.index
       } else {
         alert("This is the last episode.");
       }
@@ -87,8 +109,17 @@ export default {
 <style scoped>
 .card {
   width: 100%;
-  height: 50%;
+  height: max-content;
   text-align: center;
+}
+.player{
+  margin-left: 50%;
+  border:1px solid black;
+  transform: translate(-50%,0%);
+}
+.button-group {
+  margin-left: 50%;
+  transform: translate(-50%,0%);
 }
 
 </style>
