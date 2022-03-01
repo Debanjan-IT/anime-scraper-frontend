@@ -46,6 +46,7 @@
 <script>
 export default {
   name: "IndexPage",
+  
   watch: {
     selected(value) {
       this.index = value
