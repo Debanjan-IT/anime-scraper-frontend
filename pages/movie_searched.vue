@@ -18,7 +18,6 @@
 </template>
 
 <script>
-import { mapGetters } from "vuex";
 import navbar from "../components/navbar.vue";
 import movies from "../components/movies.vue";
 export default {
@@ -32,50 +31,33 @@ export default {
     movies,
   },
   async created() {
-    await this.create()
+    this.loadData();
   },
   methods: {
-    async create() {
-      const page = this.$store.state.movie_page;
-      if (this.$store.state.movies.length == 0) {
-        await this.$store.dispatch("search_movies", page)
-      }
-      else {
-        this.loadData();
-      }
-    },
     loadData() {
       this.movies_data = this.$store.state.movies;
     },
     async previous() {
       if (this.$store.state.movie_page > 1) {
         this.$store.state.movie_page = this.$store.state.movie_page - 1;
-        await this.$store
-          .dispatch("search_movies", this.$store.state.movie_page)
+        await this.$store.dispatch("search_movies_by_name", this.$store.state.movie_name).then(() => {
+            this.loadData()
+        })
       } else {
         alert("No more pages.");
       }
     },
     async next() {
-      if (this.$store.state.movie_page < this.$store.state.movie_count / 16 + 1) {
+      if (this.$store.state.movie_page < this.$store.state.movie_count / 16) {
         this.$store.state.movie_page = this.$store.state.movie_page + 1;
-        await this.$store
-          .dispatch("search_movies", this.$store.state.movie_page)
+        await this.$store.dispatch("search_movies_by_name", this.$store.state.movie_name).then(() => {
+            this.loadData()
+        })
       } else {
         alert("No more pages.");
       }
     },
   },
-  watch: {
-    movies() {
-      this.movies_data = this.movies
-    }
-  },
-  computed: {
-    ...mapGetters({ 
-          movies: "getMovies"
-    }),
-  }
 };
 </script>
 
