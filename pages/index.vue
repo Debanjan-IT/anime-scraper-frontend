@@ -19,21 +19,26 @@
       </div>
       <div v-else-if="search_status == 2">
         <div class="card">
-          <h1>Episode {{ index + 1 }}</h1>
+          <h1>{{ heading }}</h1>
           <iframe
-            :src="video_link"
+            :src="video"
             id="video"
-            width="950"
+            width="900"
             height="362"
             allowfullscreen
             class="player"
           ></iframe>
-        </div><br>
+        </div>
+        <br />
         <div class="button-group">
           <b-button variant="success" @click.prevent="prev()"
             >Previous Episode</b-button
           >
-          <b-form-select style="width: max-content;" v-model="selected" :options="options"></b-form-select>
+          <b-form-select
+            style="width: max-content"
+            v-model="selected"
+            :options="options"
+          ></b-form-select>
           <b-button variant="success" @click.prevent="next()"
             >Next Episode</b-button
           >
@@ -48,14 +53,16 @@ export default {
   name: "IndexPage",
   watch: {
     selected(value) {
-      this.index = value
+      this.index = value;
+      this.load(this.anime_data[this.index].link);
     },
   },
   data() {
     return {
       index: 0,
-      video_link: '',
       url: "",
+      video: '',
+      heading: '',
       selected: 0,
       options: [],
       anime_data: [],
@@ -64,43 +71,60 @@ export default {
   },
   methods: {
     async load(link) {
-      const axios = require("axios");
-      const episode = await axios.post(`${process.env.API_URL}get_episode`,{
-        url: link,
-      })
-      console.log(episode);
-      this.video_link = episode.data.video_link
-      let audio_iframe = document.getElementById('video');
-      audio_iframe.volume=0.2;
+      try {
+        const axios = require("axios");
+        const response = await axios.post(
+          `${process.env.API_URL}get_episode`,
+          {
+            url: link,
+          },
+          {
+            headers: { 
+              "content-type": "application/json",
+            }
+          }
+        );
+        this.search_status = 2;
+        this.heading = `Episode ${response.data.episode_number}`
+        this.video = response.data.video_link
+      } catch (error) {
+        console.log(error)
+      }
     },
     async search() {
       const axios = require("axios");
       this.search_status = 1;
       try {
-        const response = await axios.post(`${process.env.API_URL}get_data`, {
-          url: this.url,
-        });
-        console.log(response);
+        const response = await axios.post(
+          `${process.env.API_URL}get_data`,
+          {
+            url: this.url,
+          }, {
+            headers: {
+              "content-type": "application/json"
+            }
+          }
+        );
         this.anime_data = response.data;
         const data = response.data.map((element, index) => {
           return {
             value: index,
-            text: `Episode ${index+1}`
-          }
-        })
-        const pro_data = await Promise.all(data)
-        this.options = pro_data
-        this.search_status = 2;
-        this.load(this.anime_data[0].link)
+            text: `Episode ${index + 1}`,
+          };
+        });
+        const pro_data = await Promise.all(data);
+        this.options = pro_data;
+        this.load(this.anime_data[0].link);
       } catch (error) {
         console.log(error);
+        this.search_status = 0;
       }
     },
     prev() {
       if (this.index > 0) {
         this.index = this.index - 1;
-        this.selected = this.index
-        this.load(this.anime_data[this.index].link)
+        this.selected = this.index;
+        this.load(this.anime_data[this.index].link);
       } else {
         alert("This is the first episode.");
       }
@@ -108,8 +132,8 @@ export default {
     next() {
       if (this.index < this.anime_data.length - 1) {
         this.index = this.index + 1;
-        this.selected = this.index
-        this.load(this.anime_data[this.index].link)
+        this.selected = this.index;
+        this.load(this.anime_data[this.index].link);
       } else {
         alert("This is the last episode.");
       }
@@ -125,14 +149,13 @@ export default {
   height: max-content;
   text-align: center;
 }
-.player{
+.player {
   margin-left: 50%;
-  border:1px solid black;
-  transform: translate(-50%,0%);
+  border: 1px solid black;
+  transform: translate(-50%, 0%);
 }
 .button-group {
   margin-left: 50%;
-  transform: translate(-50%,0%);
+  transform: translate(-50%, 0%);
 }
-
 </style>

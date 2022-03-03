@@ -2,12 +2,9 @@ export default {
   // Disable server-side rendering: https://go.nuxtjs.dev/ssr-mode
   ssr: false,
 
-  // Target: https://go.nuxtjs.dev/config-target
-  target: 'static',
-
   // Global page headers: https://go.nuxtjs.dev/config-head
   head: {
-    title: 'movie-scrapper',
+    title: 'anime-downloader',
     htmlAttrs: {
       lang: 'en'
     },
@@ -41,13 +38,12 @@ export default {
   modules: [
     // https://go.nuxtjs.dev/bootstrap
     'bootstrap-vue/nuxt',
-    "@nuxtjs/axios",
   ],
 
   // Build Configuration: https://go.nuxtjs.dev/config-build
   build: {
   },
   env: {
-    API_URL: 'https://anime-scraper-backend.herokuapp.com/'
+    API_URL: 'http://localhost:3030/'
   }
 }
